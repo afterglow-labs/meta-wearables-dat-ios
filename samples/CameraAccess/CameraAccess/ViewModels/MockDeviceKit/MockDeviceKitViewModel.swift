@@ -20,49 +20,58 @@ import Foundation
 import MWDATMockDevice
 import Observation
 
-extension MockDeviceKitView {
-  @Observable
-  @MainActor
-  class ViewModel {
-    private let mockDeviceKit: MockDeviceKitInterface
-    var cardViewModels: [MockDeviceCardView.ViewModel] = []
-    var isEnabled: Bool
+@Observable
+@MainActor
+final class MockDeviceKitViewModel {
+  private let mockDeviceKit: MockDeviceKitInterface
+  var cardViewModels: [MockDeviceCardViewModel] = []
+  var isEnabled: Bool
+  var showError: Bool = false
+  var errorMessage: String = ""
 
-    init(mockDeviceKit: MockDeviceKitInterface) {
-      self.mockDeviceKit = mockDeviceKit
-      self.isEnabled = mockDeviceKit.isEnabled
-      self.cardViewModels = mockDeviceKit.pairedDevices.compactMap { $0 as? MockGlasses }.map { MockDeviceCardView.ViewModel(device: $0) }
-    }
+  init(mockDeviceKit: MockDeviceKitInterface) {
+    self.mockDeviceKit = mockDeviceKit
+    self.isEnabled = mockDeviceKit.isEnabled
+    self.cardViewModels = mockDeviceKit.pairedDevices.compactMap { $0 as? MockGlasses }.map { MockDeviceCardViewModel(device: $0) }
+  }
 
-    func enable() {
-      mockDeviceKit.enable()
-      isEnabled = true
-    }
+  func enable() {
+    mockDeviceKit.enable()
+    isEnabled = true
+  }
 
-    func disable() {
-      mockDeviceKit.disable()
-      cardViewModels = []
-      isEnabled = false
-    }
+  func disable() {
+    mockDeviceKit.disable()
+    cardViewModels = []
+    isEnabled = false
+  }
 
-    // Add a new mock Ray-Ban Meta device
-    func pairGlasses() {
-      let mockDevice: MockGlasses
-      do {
-        mockDevice = try mockDeviceKit.pairGlasses(model: .rayBanMeta)
-      } catch {
-        print("Failed to pair mock glasses: \(error)")
-        return
-      }
-      cardViewModels.append(MockDeviceCardView.ViewModel(device: mockDevice))
+  // Add a new mock Ray-Ban Meta device
+  func pairGlasses() {
+    let mockDevice: MockGlasses
+    do {
+      mockDevice = try mockDeviceKit.pairGlasses(model: .rayBanMeta)
+    } catch {
+      showError(error.localizedDescription)
+      return
     }
+    cardViewModels.append(MockDeviceCardViewModel(device: mockDevice))
+  }
 
-    func unpairDevice(_ device: MockDevice) {
-      if let idx = cardViewModels.firstIndex(where: { $0.id == device.deviceIdentifier }) {
-        cardViewModels.remove(at: idx)
-        mockDeviceKit.unpairDevice(device)
-      }
+  func unpairDevice(_ device: MockDevice) {
+    if let idx = cardViewModels.firstIndex(where: { $0.id == device.deviceIdentifier }) {
+      cardViewModels.remove(at: idx)
+      mockDeviceKit.unpairDevice(device)
     }
+  }
+
+  func showError(_ message: String) {
+    errorMessage = message
+    showError = true
+  }
+
+  func dismissError() {
+    showError = false
   }
 }
 

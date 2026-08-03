@@ -12,9 +12,9 @@ A sample iOS application demonstrating integration with Meta Wearables Device Ac
 
 ## Prerequisites
 
-- iOS 17.0+
-- Xcode 14.0+
-- Swift 5.0+
+- iOS 17.2+
+- Xcode 26.4+
+- Swift 6.3+
 - Meta Wearables Device Access Toolkit (included as a dependency)
 - A Meta Ray-Ban Display glasses device for testing
 

@@ -1,7 +1,7 @@
 # Meta Wearables Device Access Toolkit for iOS
 
-[![Swift Package](https://img.shields.io/badge/Swift_Package-0.8.0-brightgreen?logo=swift&logoColor=white)](https://github.com/facebook/meta-wearables-dat-ios/tags)
-[![Docs](https://img.shields.io/badge/API_Reference-0.8-blue?logo=meta)](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8)
+[![Swift Package](https://img.shields.io/badge/Swift_Package-0.9.0-brightgreen?logo=swift&logoColor=white)](https://github.com/facebook/meta-wearables-dat-ios/tags)
+[![Docs](https://img.shields.io/badge/API_Reference-0.9-blue?logo=meta)](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.9)
 
 The Meta Wearables Device Access Toolkit enables developers to utilize Meta's AI glasses to build hands-free wearable experiences into their mobile applications.
 By integrating this SDK, developers can reliably connect to Meta's AI glasses and leverage capabilities like video streaming and photo capture.
@@ -75,6 +75,28 @@ Add or modify the following in your `Info.plist` file.
 
 - `YES`/`<true/>` = Opt out (analytics **disabled**)
 - `NO`/`<false/>` = Opt in (analytics **enabled**)
+
+### Crash reporting
+
+The Wearables Device Access Toolkit can capture crashes originating from SDK code, store them locally,
+and chain with any existing crash handler your app installs. Crash reporting is **enabled by default**.
+
+To opt out, add a `CrashReporting` dictionary with an `OptOut` boolean set to `true` under the `MWDAT`
+key in your app's `Info.plist`:
+
+```XML
+<key>MWDAT</key>
+<dict>
+    <key>CrashReporting</key>
+    <dict>
+        <key>OptOut</key>
+        <true/>
+    </dict>
+</dict>
+```
+
+**Default behavior:** If the `OptOut` key is missing or set to `NO`/`<false/>`, crash reporting is
+**enabled**. Set it to `YES`/`<true/>` to disable SDK crash capture.
 
 ## AI-Assisted Development
 

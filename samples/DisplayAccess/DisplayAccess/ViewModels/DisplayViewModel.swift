@@ -244,7 +244,7 @@ class DisplayViewModel {
   func sendTutorialVideo(tutorialIndex: Int, stepIndex: Int) async {
     await send(CarMaintenanceDisplay.tutorialVideo())
     display?.onPlaybackEvent = { [weak self] event in
-      if event.type == .ended || event.type == .stopped {
+      if event.type == .ended {
         Task { @MainActor [weak self] in
           self?.display?.onPlaybackEvent = nil
           await self?.sendCarMaintenanceTutorialStep(

@@ -112,7 +112,7 @@ Use `llms.txt` when your tool only supports static reference context.
 
 ## Links
 
-- [iOS API Reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8)
+- [iOS API Reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest)
 - [Developer Documentation](https://wearables.developer.meta.com/docs/develop/)
 - [GitHub Repository](https://github.com/facebook/meta-wearables-dat-ios)
 
@@ -258,9 +258,10 @@ let config = StreamConfiguration(
     resolution: .low,
     frameRate: 24
 )
-guard let stream = try deviceSession.addStream(config: config) else {
+guard let camera = try deviceSession.addCamera(config: config) else {
     return
 }
+let stream = camera.stream
 
 // Observe frames
 let frameToken = stream.videoFramePublisher.listen { frame in
@@ -436,9 +437,9 @@ for await state in deviceSession.stateStream() {
 }
 ```
 
-## Adding a Stream
+## Adding a Camera
 
-Once the `DeviceSession` is started, add a `Stream` capability:
+Once the `DeviceSession` is started, add a `Camera` capability and get its `stream`:
 
 ```swift
 let config = StreamConfiguration(
@@ -447,10 +448,11 @@ let config = StreamConfiguration(
     frameRate: 24
 )
 
-guard let stream = try deviceSession.addStream(config: config) else {
-    // DeviceSession must be in the started state before adding a stream
+guard let camera = try deviceSession.addCamera(config: config) else {
+    // DeviceSession must be in the started state before adding a camera
     return
 }
+let stream = camera.stream
 ```
 
 ### Resolution options
@@ -507,8 +509,8 @@ let frameToken = stream.videoFramePublisher.listen { frame in
 // Start the stream capability
 stream.start()
 
-// Stop streaming
-stream.stop()
+// Stop the camera (teardown cascades to the stream)
+camera.stop()
 
 // Stop the parent device session when you're done with all capabilities
 deviceSession.stop()
@@ -539,8 +541,8 @@ Request lower settings for higher visual quality per frame.
 
 ## Links
 
-- [Stream API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8/mwdatcamera_stream)
-- [StreamConfiguration API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8/mwdatcamera_streamconfiguration)
+- [Stream API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest/mwdatcamera_stream)
+- [StreamConfiguration API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest/mwdatcamera_streamconfiguration)
 - [Integration guide](https://wearables.developer.meta.com/docs/build-integration-ios)
 
 ## Session management
@@ -590,14 +592,15 @@ Task {
 
 ## Stream state transitions
 
-A `Stream` is a capability attached to a started `DeviceSession`:
+A `Stream` is obtained from the `Camera` capability attached to a started `DeviceSession`:
 
 ```text
 stopped → waitingForDevice → starting → streaming → paused → stopped
 ```
 
 ```swift
-guard let stream = try session.addStream(config: StreamConfiguration()) else { return }
+guard let camera = try session.addCamera(config: StreamConfiguration()) else { return }
+let stream = camera.stream
 
 let token = stream.statePublisher.listen { state in
     Task { @MainActor in
@@ -968,6 +971,7 @@ class StreamViewModel: ObservableObject {
 
     private let wearables = Wearables.shared
     private var deviceSession: DeviceSession?
+    private var camera: Camera?
     private var stream: Stream?
 
     func startStream() async {
@@ -985,8 +989,10 @@ class StreamViewModel: ObservableObject {
             for await state in deviceSession.stateStream() {
                 if state == .started { break }
             }
-            guard let stream = try deviceSession.addStream(config: config) else { return }
+            guard let camera = try deviceSession.addCamera(config: config) else { return }
+            let stream = camera.stream
             self.deviceSession = deviceSession
+            self.camera = camera
             self.stream = stream
         } catch {
             return
@@ -1017,9 +1023,10 @@ class StreamViewModel: ObservableObject {
     }
 
     func stopStream() {
-        stream?.stop()
+        camera?.stop()
         deviceSession?.stop()
         stream = nil
+        camera = nil
         deviceSession = nil
     }
 

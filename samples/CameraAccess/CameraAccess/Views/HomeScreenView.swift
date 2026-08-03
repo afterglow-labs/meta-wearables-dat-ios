@@ -32,20 +32,20 @@ struct HomeScreenView: View {
           .frame(width: 120)
 
         VStack(spacing: 12) {
-          HomeTipItemView(
+          TipRow(
             resource: .smartGlassesIcon,
-            title: "Video Capture",
-            text: "Record videos directly from your glasses, from your point of view."
+            title: "Start a session",
+            text: "Connect to your glasses to get started."
           )
-          HomeTipItemView(
-            resource: .soundIcon,
-            title: "Open-Ear Audio",
-            text: "Hear notifications while keeping your ears open to the world around you."
+          TipRow(
+            resource: .videoIcon,
+            title: "Start preview",
+            text: "See the live camera feed from your glasses."
           )
-          HomeTipItemView(
-            resource: .walkingIcon,
-            title: "Enjoy On-the-Go",
-            text: "Stay hands-free while you move through your day. Move freely, stay connected."
+          TipRow(
+            resource: .tapIcon,
+            title: "Capture",
+            text: "Take photos and record video with audio."
           )
         }
 
@@ -60,7 +60,7 @@ struct HomeScreenView: View {
             .padding(.horizontal, 12)
 
           CustomButton(
-            title: viewModel.registrationState == .registering ? "Connecting..." : "Connect my glasses",
+            title: viewModel.registrationState == .registering ? "Connecting…" : "Connect my glasses",
             style: .primary,
             isDisabled: viewModel.registrationState == .registering
           ) {
@@ -69,37 +69,6 @@ struct HomeScreenView: View {
         }
       }
       .padding(.all, 24)
-    }
-  }
-
-}
-
-struct HomeTipItemView: View {
-  let resource: ImageResource
-  let title: String
-  let text: String
-
-  var body: some View {
-    HStack(alignment: .top, spacing: 12) {
-      Image(resource)
-        .resizable()
-        .renderingMode(.template)
-        .foregroundStyle(.black)
-        .aspectRatio(contentMode: .fit)
-        .frame(width: 24)
-        .padding(.leading, 4)
-        .padding(.top, 4)
-
-      VStack(alignment: .leading, spacing: 6) {
-        Text(title)
-          .font(.system(size: 18, weight: .semibold))
-          .foregroundStyle(.black)
-
-        Text(text)
-          .font(.system(size: 15))
-          .foregroundStyle(.gray)
-      }
-      Spacer()
     }
   }
 }

@@ -32,9 +32,9 @@ for await state in deviceSession.stateStream() {
 }
 ```
 
-## Adding a Stream
+## Adding a Camera
 
-Once the `DeviceSession` is started, add a `Stream` capability:
+Once the `DeviceSession` is started, add a `Camera` capability and get its `stream`:
 
 ```swift
 let config = StreamConfiguration(
@@ -43,10 +43,11 @@ let config = StreamConfiguration(
     frameRate: 24
 )
 
-guard let stream = try deviceSession.addStream(config: config) else {
-    // DeviceSession must be in the started state before adding a stream
+guard let camera = try deviceSession.addCamera(config: config) else {
+    // DeviceSession must be in the started state before adding a camera
     return
 }
+let stream = camera.stream
 ```
 
 ### Resolution options
@@ -103,8 +104,8 @@ let frameToken = stream.videoFramePublisher.listen { frame in
 // Start the stream capability
 stream.start()
 
-// Stop streaming
-stream.stop()
+// Stop the camera (teardown cascades to the stream)
+camera.stop()
 
 // Stop the parent device session when you're done with all capabilities
 deviceSession.stop()
@@ -135,6 +136,6 @@ Request lower settings for higher visual quality per frame.
 
 ## Links
 
-- [Stream API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8/mwdatcamera_stream)
-- [StreamConfiguration API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8/mwdatcamera_streamconfiguration)
+- [Stream API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest/mwdatcamera_stream)
+- [StreamConfiguration API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest/mwdatcamera_streamconfiguration)
 - [Integration guide](https://wearables.developer.meta.com/docs/build-integration-ios)

@@ -14,27 +14,14 @@
 //
 
 import MWDATDisplay
+import UIKit
 
 struct CarMaintenanceTutorial {
   let title: String
   let duration: String
-  let imageUri: String?
-  let iconImageUri: String?
+  let image: Image?
+  let icon: Image?
   let steps: [CarMaintenanceTutorialStep]
-
-  init(
-    title: String,
-    duration: String,
-    imageUri: String? = nil,
-    iconImageUri: String? = nil,
-    steps: [CarMaintenanceTutorialStep]
-  ) {
-    self.title = title
-    self.duration = duration
-    self.imageUri = imageUri
-    self.iconImageUri = iconImageUri
-    self.steps = steps
-  }
 }
 
 struct CarMaintenanceTutorialStep {
@@ -49,8 +36,8 @@ enum CarMaintenanceDisplay {
     CarMaintenanceTutorial(
       title: "Oil change",
       duration: "Easy • 45 min",
-      imageUri: "https://www.facebook.com/assets/wearables_dat_display/oil.png",
-      iconImageUri: "https://www.facebook.com/assets/wearables_dat_display/oil_square.png",
+      image: Image(image: UIImage(resource: .oil), sizePreset: .fill, cornerRadius: .medium),
+      icon: Image(image: UIImage(resource: .oilSquare), sizePreset: .fill, cornerRadius: .medium),
       steps: [
         CarMaintenanceTutorialStep(
           description: "Park on level ground and let the engine cool before opening the hood."
@@ -66,8 +53,16 @@ enum CarMaintenanceDisplay {
     CarMaintenanceTutorial(
       title: "Fix a flat tire",
       duration: "Easy • 15 min",
-      imageUri: "https://www.facebook.com/assets/wearables_dat_display/tire.png",
-      iconImageUri: "https://www.facebook.com/assets/wearables_dat_display/tire_square.png",
+      image: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/tire.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
+      icon: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/tire_square.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
       steps: [
         CarMaintenanceTutorialStep(
           description: "Park away from traffic, engage the brake, and place the wheel wedges."
@@ -83,8 +78,16 @@ enum CarMaintenanceDisplay {
     CarMaintenanceTutorial(
       title: "Replace headlight bulb",
       duration: "Very easy • 5 min",
-      imageUri: "https://www.facebook.com/assets/wearables_dat_display/light.png",
-      iconImageUri: "https://www.facebook.com/assets/wearables_dat_display/light_square.png",
+      image: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/light.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
+      icon: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/light_square.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
       steps: [
         CarMaintenanceTutorialStep(
           description: "Open the rear access cover and disconnect the bulb connector."
@@ -100,8 +103,16 @@ enum CarMaintenanceDisplay {
     CarMaintenanceTutorial(
       title: "Check engine light",
       duration: "Hard • 2 hours",
-      imageUri: "https://www.facebook.com/assets/wearables_dat_display/engine.png",
-      iconImageUri: "https://www.facebook.com/assets/wearables_dat_display/engine_square.png",
+      image: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/engine.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
+      icon: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/engine_square.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
       steps: [
         CarMaintenanceTutorialStep(
           description: "Check whether the light is steady or flashing, and stop driving if it is flashing."
@@ -117,8 +128,16 @@ enum CarMaintenanceDisplay {
     CarMaintenanceTutorial(
       title: "Change washer fluid",
       duration: "Very easy • 3 min",
-      imageUri: "https://www.facebook.com/assets/wearables_dat_display/washer.png",
-      iconImageUri: "https://www.facebook.com/assets/wearables_dat_display/washer_square.png",
+      image: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/washer.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
+      icon: Image(
+        uri: "https://www.facebook.com/assets/wearables_dat_display/washer_square.png",
+        sizePreset: .fill,
+        cornerRadius: .medium
+      ),
       steps: [
         CarMaintenanceTutorialStep(
           description: "Open the hood and locate the washer fluid reservoir cap with the windshield symbol."
@@ -139,20 +158,23 @@ enum CarMaintenanceDisplay {
   ) -> FlexBox {
     FlexBox(direction: .column, spacing: 10) {
       for index in tutorials.indices {
-        FlexBox(direction: .row, spacing: 12, crossAlignment: .center) {
-          if let iconImageUri = tutorials[index].iconImageUri {
-            FlexBox(direction: .column) {
-              Image(uri: iconImageUri, sizePreset: .fill, cornerRadius: .medium)
+        FlexBox(direction: .column) {
+          FlexBox(direction: .row, spacing: 12, crossAlignment: .center) {
+            if let icon = tutorials[index].icon {
+              FlexBox(direction: .column) {
+                icon
+              }
+              .flexGrow(1)
             }
-            .flexGrow(1)
+            FlexBox(direction: .column) {
+              Text(tutorials[index].title, style: .body)
+              Text(tutorials[index].duration, style: .meta, color: .secondary)
+            }
+            .flexGrow(7)
           }
-          FlexBox(direction: .column) {
-            Text(tutorials[index].title, style: .body)
-            Text(tutorials[index].duration, style: .meta, color: .secondary)
-          }
-          .flexGrow(7)
         }
         .padding(24)
+        .background(.card)
         .onTap { onSelectTutorial(index) }
       }
     }
@@ -167,8 +189,8 @@ enum CarMaintenanceDisplay {
     let tutorial = tutorials[tutorialIndex]
     return FlexBox(direction: .column, spacing: 12) {
       FlexBox(direction: .column) {
-        if let imageUri = tutorial.imageUri {
-          Image(uri: imageUri, sizePreset: .fill, cornerRadius: .medium)
+        if let image = tutorial.image {
+          image
         }
         Text(tutorial.title, style: .heading)
         Text(tutorial.duration, style: .meta, color: .secondary)
@@ -177,8 +199,10 @@ enum CarMaintenanceDisplay {
       .background(.card)
 
       FlexBox(direction: .row, spacing: 8, alignment: .center, crossAlignment: .center, wrap: true) {
-        Button(label: "Back", onClick: onBack)
-        Button(label: "Start", onClick: onStart)
+        ButtonGroup {
+          Button(label: "Back", onClick: onBack)
+          Button(label: "Start", onClick: onStart)
+        }
       }
     }
   }
@@ -210,14 +234,16 @@ enum CarMaintenanceDisplay {
       .background(.card)
 
       FlexBox(direction: .row, spacing: 8, alignment: .center, crossAlignment: .center) {
-        Button(label: "Previous", style: .primary, iconName: .triangleLeftVerticalLine, onClick: onPrevious)
-        Button(
-          label: isLastStep ? "Done" : "Next",
-          style: .primary,
-          iconName: isLastStep ? .checkmark : .triangleRightVerticalLine,
-          onClick: onNext
-        )
-        Button(label: "Watch video", style: .secondary, iconName: .videoCamera, onClick: onWatchVideo)
+        ButtonGroup {
+          Button(label: "Previous", style: .primary, iconName: .triangleLeftVerticalLine, onClick: onPrevious)
+          Button(
+            label: isLastStep ? "Done" : "Next",
+            style: .primary,
+            iconName: isLastStep ? .checkmark : .triangleRightVerticalLine,
+            onClick: onNext
+          )
+          Button(label: "Watch video", style: .secondary, iconName: .videoCamera, onClick: onWatchVideo)
+        }
       }
     }
   }

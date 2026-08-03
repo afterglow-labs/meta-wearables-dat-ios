@@ -40,7 +40,7 @@ struct RegistrationView: View {
           } catch let error as RegistrationError {
             viewModel.showError(error.description)
           } catch {
-            viewModel.showError("Unknown error: \(error.localizedDescription)")
+            viewModel.showError(error.localizedDescription)
           }
         }
       }

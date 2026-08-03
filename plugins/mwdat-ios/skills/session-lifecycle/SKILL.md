@@ -50,14 +50,15 @@ Task {
 
 ## Stream state transitions
 
-A `Stream` is a capability attached to a started `DeviceSession`:
+A `Stream` is obtained from the `Camera` capability attached to a started `DeviceSession`:
 
 ```text
 stopped → waitingForDevice → starting → streaming → paused → stopped
 ```
 
 ```swift
-guard let stream = try session.addStream(config: StreamConfiguration()) else { return }
+guard let camera = try session.addCamera(config: StreamConfiguration()) else { return }
+let stream = camera.stream
 
 let token = stream.statePublisher.listen { state in
     Task { @MainActor in

@@ -7,6 +7,11 @@ description: Common issues, Developer Mode, version compatibility, state machine
 
 Diagnose common setup, registration, and streaming issues in DAT SDK integrations.
 
+If local DAT Inspector MCP tools are available, use the `live-debugging-mcp`
+skill before changing app code. Prefer `get_dat_readiness`,
+`get_companion_boundary_diagnosis`, and `get_device_path` to separate app bugs from
+Meta AI app/device boundary issues using read-only DAT evidence.
+
 ## Quick diagnosis
 
 ```text
@@ -90,6 +95,22 @@ private let logger = Logger(subsystem: "com.yourapp", category: "Wearables")
 logger.debug("Stream state changed to: \(state)")
 logger.error("Stream error: \(error)")
 ```
+
+## Live MCP evidence
+
+When the developer has a local DAT debug server connected to the agent:
+
+- Start with `get_sdk_state` and `get_dat_readiness`
+- Use `get_companion_boundary_diagnosis` for permission, app identity, device
+  capability, device-selection, deeplink-return, and DAM/DWA-visible blockers
+- Use `get_device_path` to trace app -> DAT registration -> Meta AI app permissions ->
+  device selection/link -> session -> stream
+- Ask the developer to reproduce the issue, then use `wait_for_events` with the
+  narrowest category or source that matches the flow
+- Use `export_diagnostic_bundle` for redacted support handoff
+
+Do not treat this as companion app introspection. It is diagnosis from
+app-visible DAT debug events.
 
 ## Checklist
 

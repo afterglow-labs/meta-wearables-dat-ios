@@ -21,7 +21,7 @@ import MWDATMockDevice
 import SwiftUI
 
 struct MockDeviceCardView: View {
-  @Bindable var viewModel: ViewModel
+  @Bindable var viewModel: MockDeviceCardViewModel
   let onUnpairDevice: () -> Void
 
   @State private var showingVideoPicker = false
@@ -107,7 +107,7 @@ struct MockDeviceCardView: View {
             }
 
             // Captouch gesture buttons
-            Text("Capacitive Touch Events")
+            Text("Capacitive touch events")
               .font(.subheadline)
               .fontWeight(.medium)
               .foregroundStyle(.secondary)
@@ -117,7 +117,7 @@ struct MockDeviceCardView: View {
               MockDeviceKitButton("Tap") {
                 viewModel.captouchTap()
               }
-              MockDeviceKitButton("Tap & Hold") {
+              MockDeviceKitButton("Tap and hold") {
                 viewModel.captouchTapAndHold()
               }
             }
@@ -159,13 +159,13 @@ struct MockDeviceCardView: View {
       }
       .padding()
     }
-    .alert("Camera Access Required", isPresented: $viewModel.showCameraPermissionAlert) {
+    .alert("Camera access required", isPresented: $viewModel.showCameraPermissionAlert) {
       Button("Open Settings") {
         viewModel.openSettings()
       }
       Button("Cancel", role: .cancel) {}
     } message: {
-      Text("Camera access was denied. Please enable it in Settings to use the camera source.")
+      Text("Camera access was denied. Enable it in Settings to use the camera source.")
     }
   }
 }
@@ -179,21 +179,21 @@ private struct CameraSourcePicker: View {
 
   private var currentSourceLabel: String {
     if let source = cameraSource {
-      return source == .front ? "Front Camera" : "Back Camera"
+      return source == .front ? "Front camera" : "Back camera"
     } else if hasCameraFeed {
-      return "Video File"
+      return "Video file"
     }
     return "None"
   }
 
   var body: some View {
     Menu {
-      Button("Front Camera") { onFrontCamera() }
-      Button("Back Camera") { onBackCamera() }
-      Button("Video File") { onVideoFile() }
+      Button("Front camera") { onFrontCamera() }
+      Button("Back camera") { onBackCamera() }
+      Button("Video file") { onVideoFile() }
     } label: {
       HStack {
-        Text("Camera Source: \(currentSourceLabel)")
+        Text("Camera source: \(currentSourceLabel)")
           .font(.body)
           .foregroundStyle(.primary)
         Spacer()

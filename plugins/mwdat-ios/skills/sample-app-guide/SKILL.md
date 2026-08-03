@@ -109,6 +109,7 @@ class StreamViewModel: ObservableObject {
 
     private let wearables = Wearables.shared
     private var deviceSession: DeviceSession?
+    private var camera: Camera?
     private var stream: Stream?
 
     func startStream() async {
@@ -126,8 +127,10 @@ class StreamViewModel: ObservableObject {
             for await state in deviceSession.stateStream() {
                 if state == .started { break }
             }
-            guard let stream = try deviceSession.addStream(config: config) else { return }
+            guard let camera = try deviceSession.addCamera(config: config) else { return }
+            let stream = camera.stream
             self.deviceSession = deviceSession
+            self.camera = camera
             self.stream = stream
         } catch {
             return
@@ -158,9 +161,10 @@ class StreamViewModel: ObservableObject {
     }
 
     func stopStream() {
-        stream?.stop()
+        camera?.stop()
         deviceSession?.stop()
         stream = nil
+        camera = nil
         deviceSession = nil
     }
 

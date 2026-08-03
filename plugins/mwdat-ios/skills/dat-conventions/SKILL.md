@@ -111,6 +111,6 @@ Use `llms.txt` when your tool only supports static reference context.
 
 ## Links
 
-- [iOS API Reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8)
+- [iOS API Reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest)
 - [Developer Documentation](https://wearables.developer.meta.com/docs/develop/)
 - [GitHub Repository](https://github.com/facebook/meta-wearables-dat-ios)

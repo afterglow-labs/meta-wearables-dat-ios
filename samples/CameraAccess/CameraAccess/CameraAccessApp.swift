@@ -26,8 +26,10 @@ import MWDATMockDevice
 @main
 struct CameraAccessApp: App {
   #if DEBUG
-  // Debug menu for simulating device connections during development
-  @State private var debugMenuViewModel = DebugMenuViewModel(mockDeviceKit: MockDeviceKit.shared)
+  // Debug menu for simulating device connections during development. The
+  // ladybug button toggles `showDebugMenu`; the sheet hosts the mock device kit.
+  @State private var showDebugMenu = false
+  @State private var mockDeviceKitViewModel = MockDeviceKitViewModel(mockDeviceKit: MockDeviceKit.shared)
   #endif
   private let wearables: WearablesInterface
   @State private var wearablesViewModel: WearablesViewModel
@@ -49,7 +51,11 @@ struct CameraAccessApp: App {
 
       let portFilePath = ProcessInfo.processInfo.environment["MWDAT_TEST_SERVER_PORT_FILE"]
       Task {
-        try await MockDeviceKit.shared.startTestServer(portFilePath: portFilePath)
+        do {
+          _ = try await MockDeviceKit.shared.startTestServer(portFilePath: portFilePath)
+        } catch {
+          // pika27: errors are not propagated from this unstructured task
+        }
       }
     }
     #endif
@@ -65,7 +71,7 @@ struct CameraAccessApp: App {
       // The Wearables.shared singleton provides the core DAT API
       MainAppView(wearables: Wearables.shared, viewModel: wearablesViewModel)
         // Show error alerts for view model failures
-        .alert("Error", isPresented: $wearablesViewModel.showError) {
+        .alert("Something went wrong", isPresented: $wearablesViewModel.showError) {
           Button("OK") {
             wearablesViewModel.dismissError()
           }
@@ -73,11 +79,11 @@ struct CameraAccessApp: App {
           Text(wearablesViewModel.errorMessage)
         }
         #if DEBUG
-      .sheet(isPresented: $debugMenuViewModel.showDebugMenu) {
-        MockDeviceKitView(viewModel: debugMenuViewModel.mockDeviceKitViewModel)
+      .sheet(isPresented: $showDebugMenu) {
+        MockDeviceKitView(viewModel: mockDeviceKitViewModel)
       }
       .overlay {
-        DebugMenuView(debugMenuViewModel: debugMenuViewModel)
+        DebugMenuView(showDebugMenu: $showDebugMenu)
       }
         #endif
 

@@ -145,9 +145,10 @@ let config = StreamConfiguration(
     resolution: .low,
     frameRate: 24
 )
-guard let stream = try deviceSession.addStream(config: config) else {
+guard let camera = try deviceSession.addCamera(config: config) else {
     return
 }
+let stream = camera.stream
 
 // Observe frames
 let frameToken = stream.videoFramePublisher.listen { frame in

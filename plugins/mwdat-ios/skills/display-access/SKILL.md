@@ -23,7 +23,7 @@ import MWDATDisplay
 Use the getting-started Info.plist setup, then mirror the DisplayAccess sample for Display sessions:
 
 - Keep the `CFBundleURLTypes` URL scheme and route callbacks to `Wearables.shared.handleUrl(_:)`.
-- Under `MWDAT`, set `AppLinkURLScheme`, `MetaAppID`, `ClientToken`, `TeamID`, and `DAMEnabled = true`. `MetaAppID = 0` is for Developer Mode; production apps should use Wearables Developer Center values for `MetaAppID` and `ClientToken`, plus the Apple Developer Team ID.
+- Under `MWDAT`, set `AppLinkURLScheme`, `MetaAppID`, `ClientToken`, and `TeamID`. `MetaAppID = 0` is for Developer Mode; production apps should use Wearables Developer Center values for `MetaAppID` and `ClientToken`, plus the Apple Developer Team ID.
 - Include `UISupportedExternalAccessoryProtocols` with `com.meta.ar.wearable`, `UIBackgroundModes` entries for `external-accessory` and `bluetooth-central`, and `NSBluetoothAlwaysUsageDescription`. The DisplayAccess sample also includes `bluetooth-peripheral` and `processing`.
 - For high-bandwidth Display/video fallback, include a non-empty `NSLocalNetworkUsageDescription` and `NSBonjourServices`. Display acquires link leases: core device discovery/session setup uses medium then low links, while Display uses medium then high links when available.
 
@@ -205,7 +205,7 @@ try await display.send(
 ## Display rules
 
 - Call `Wearables.configure()` at app launch and complete registration before creating the session.
-- Enable `MWDAT.DAMEnabled` for Display sessions, and include the DisplayAccess sample's link-lease Info.plist keys when building a full Display app.
+- Include the DisplayAccess sample's link-lease Info.plist keys when building a full Display app.
 - Wait for the `DeviceSession` to reach `.started` before calling `addDisplay()`.
 - Handle `DeviceSessionError.datAppOnTheGlassesUpdateRequired` separately and offer `Wearables.shared.openDATGlassesAppUpdate()`.
 - Call `display.start()`, then wait for `DisplayState.started` through `statePublisher` before sending user-triggered content.
@@ -224,5 +224,5 @@ Use the Display Access sample app for a complete flow: registration, device sele
 
 ## Links
 
-- [iOS API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/0.8)
+- [iOS API reference](https://wearables.developer.meta.com/docs/reference/ios_swift/dat/latest)
 - [Developer documentation](https://wearables.developer.meta.com/docs/develop/)

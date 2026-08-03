@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-08-03
+
+### Added
+
+- [API] **Consolidated `Camera` capability.** `DeviceSession.addCamera(config:)` returns a `Camera` that owns the camera hardware resource and exposes its child features — `Camera.stream` — with `Camera.stop()` to detach and `CameraState` (plus `Camera.statePublisher`) reporting the camera lifecycle. Stopping the camera cascades to its children.
+- [API] **Display `ButtonGroup` component.** New `ButtonGroup` struct (with `ButtonGroupBuilder` for result-builder syntax) and `ButtonGroupAlignment` enum for laying out button groups within display content. Objective-C equivalents: `MWDATButtonGroup`, `MWDATButtonGroupAlignment`.
+- [API] `ListenerTokenBag` actor and `AnyListenerToken.store(in bag:)` for aggregating multiple listener tokens and cancelling them together.
+- [API] `DeviceType.supportsDisplay` — predicate for whether a device type can render display content.
+- [API] Crash-reporting opt-out via the app's `Info.plist` key `MWDAT > CrashReporting > OptOut` (Bool, default `false`).
+- `ComponentBuilder.buildEither(second:)` — completes if/else support in the display result builder.
+- Camera Access sample: record video with optional sound-in-video, continuing while the app is backgrounded.
+
+### Changed
+
+- [API] **Minimum deployment target bumped from iOS 15.2 to iOS 17.2.** Apps targeting older iOS versions can no longer link the SDK.
+- [API] `MockCameraKit.setCameraFeed(cameraFacing:)` is now synchronous (previously `async`). Remove any `await` at the call site; the mock records the camera source synchronously.
+- [API] `DeviceSession.stateStream()` and `errorStream()` now finish when the session reaches `.stopped` (after `stateStream()` delivers the terminal `.stopped` value). A stream created after the session has already stopped finishes immediately.
+- Camera Access sample rebuilt around the explicit camera lifecycle (start session, start preview, capture or record, stop preview, end session) on a single full-bleed camera screen, consolidating the previous camera samples into one.
+- Camera Access now ends the active preview session when the app backgrounds instead of attempting to preserve the session across app switches.
+
+### Removed
+
+- [API] `DeviceSession.addStream(config:)` has been removed. Streaming is now reached through the consolidated `Camera`: use `DeviceSession.addCamera(config:)` and access the stream via `camera.stream`.
+- [API] `CaptureError` enum. Photo-capture failures now surface via `StreamError.photoCaptureFailed` on the stream's error publisher.
+- [API] Support for opting out of the Device Access Toolkit App Model (DAM). DAM is now always enabled, so the `MWDAT.DAMEnabled` Info.plist key is ignored. No action is required; you can delete the key from your Info.plist at your convenience.
+
+### Fixed
+
+- `Stream` now surfaces `StreamError.hingesClosed` when the control stream stops because the device was doffed, matching the existing `closeArms` behavior (previously the doff case silently collapsed into a generic pause).
+- `MockDeviceKit` now uses the same `Info.plist`-based link-availability check as real devices. Apps missing Bluetooth/Wi-Fi `Info.plist` entitlements fail identically on mock and real hardware.
+- Generated Objective-C interface headers (e.g. `MWDATCamera-Swift.h`) in the distributed XCFrameworks no longer reference unresolvable internal build paths.
+
 ## [0.8.0] - 2026-06-25
 
 ### Added
