@@ -274,6 +274,31 @@ final public class AutoDeviceSelector : MWDATCore.DeviceSelector {
   final public func stop()
   final public func stateStream() -> _Concurrency.AsyncStream<MWDATCore.DeviceSessionState>
   final public func errorStream() -> _Concurrency.AsyncStream<MWDATCore.DeviceSessionError>
+  final public func getOrCreateDwaCapabilityChannel() -> MWDATCore.DwaCapabilityChannel?
+}
+@frozen public enum DwaCapability : Swift.Equatable, Swift.Hashable {
+  case unknown
+  case display
+  case speech
+  case stream
+  case imu
+  case inputs
+  public static func == (a: MWDATCore.DwaCapability, b: MWDATCore.DwaCapability) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol DwaCallbackRegistration {
+  func unregister()
+  var isActive: Swift.Bool {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers final public class DwaCapabilityChannel : Swift.Sendable {
+  final public func registerCallbacks(onResponse: (@Sendable (Foundation.Data) -> Swift.Void)?, onEvent: (@Sendable (Foundation.Data) -> Swift.Void)?, onError: (@Sendable (Swift.UInt16) -> Swift.Void)?, onClosed: (@Sendable () -> Swift.Void)?) -> any MWDATCore.DwaCallbackRegistration
+  final public func sendCapabilityPayloadRequest(_ capability: MWDATCore.DwaCapability, payload: Foundation.Data, messageID: Swift.String) -> Swift.Bool
+  @objc deinit
 }
 @frozen public enum DeviceSessionError : MWDATCore.DatError, Swift.Equatable {
   case noEligibleDevice

@@ -4,6 +4,9 @@ import PackageDescription
 
 let package = Package(
   name: "MetaWearablesDAT",
+  platforms: [
+    .iOS("16.5"),
+  ],
   products: [
     .library(
       name: "MWDATCamera",
@@ -16,6 +19,10 @@ let package = Package(
     .library(
       name: "MWDATDisplay",
       targets: ["MWDATDisplay"]
+    ),
+    .library(
+      name: "MWDATDisplayLive",
+      targets: ["MWDATDisplayLive"]
     ),
     .library(
       name: "MWDATMockDevice",
@@ -39,6 +46,10 @@ let package = Package(
       name: "MWDATDisplay",
       path: "MWDATDisplay.xcframework"
     ),
+    .target(
+      name: "MWDATDisplayLive",
+      dependencies: ["MWDATCore", "MWDATDisplay"]
+    ),
     .binaryTarget(
       name: "MWDATMockDevice",
       path: "MWDATMockDevice.xcframework"
@@ -46,6 +57,10 @@ let package = Package(
     .binaryTarget(
       name: "MWDATMockDeviceTestClient",
       path: "MWDATMockDeviceTestClient.xcframework"
+    ),
+    .testTarget(
+      name: "MWDATDisplayLiveTests",
+      dependencies: ["MWDATDisplayLive"]
     ),
   ]
 )
