@@ -104,51 +104,65 @@ actor DisplayFeedTransport {
       finish(generation: generation)
     }
 
-    try sendRequest(DwaDisplayWire.encodeStart(codecRawValue: 1))
-    var sentRequestCount = 1
-    var acknowledgedRequestCount = 0
-    try await waitUntilInitiallyReady(acknowledgedRequestCount: &acknowledgedRequestCount)
+    var didStart = false
+    do {
+      try sendRequest(DwaDisplayWire.encodeStart(codecRawValue: 1))
+      didStart = true
+      try await waitUntilInitiallyReady()
 
-    var isBufferFull = false
-    var offset = 0
-    var sequenceNumber: Int32 = 0
+      var isBufferFull = false
+      var acknowledgedByteCount = 0
+      var outstandingChunkEnds: [Int] = []
+      var offset = 0
+      var sequenceNumber: Int32 = 0
 
-    while offset < video.count {
-      while isBufferFull || sentRequestCount - acknowledgedRequestCount >= maximumOutstandingRequests {
+      while offset < video.count {
+        while isBufferFull || outstandingChunkEnds.count >= maximumOutstandingRequests {
+          let ack = try await nextAck(
+            timeout: flowControlTimeout,
+            timeoutError: .flowControlTimedOut)
+          try apply(
+            ack,
+            videoByteCount: video.count,
+            acknowledgedByteCount: &acknowledgedByteCount,
+            isBufferFull: &isBufferFull)
+          removeAcknowledgedChunks(
+            from: &outstandingChunkEnds,
+            acknowledgedByteCount: acknowledgedByteCount)
+        }
+
+        let end = min(offset + chunkSize, video.count)
+        let chunk = video.subdata(in: offset..<end)
+        try sendRequest(DwaDisplayWire.encodeChunk(
+          offset: Int64(offset),
+          data: chunk,
+          isLast: end == video.count,
+          sequenceNumber: sequenceNumber))
+        outstandingChunkEnds.append(end)
+        offset = end
+        sequenceNumber += 1
+      }
+
+      while acknowledgedByteCount < video.count {
         let ack = try await nextAck(
           timeout: flowControlTimeout,
           timeoutError: .flowControlTimedOut)
-        acknowledgedRequestCount += 1
-
-        switch ack.status {
-        case .ready:
-          isBufferFull = false
-        case .bufferFull:
-          isBufferFull = true
-        case .error:
-          throw LiveDisplayFeedError.displayRejected(ack.errorMessage)
-        case .unknown:
-          throw LiveDisplayFeedError.displayRejected("The Meta display returned an unknown MP4 acknowledgement.")
-        }
+        try apply(
+          ack,
+          videoByteCount: video.count,
+          acknowledgedByteCount: &acknowledgedByteCount,
+          isBufferFull: &isBufferFull)
       }
-
-      let end = min(offset + chunkSize, video.count)
-      let chunk = video.subdata(in: offset..<end)
-      try sendRequest(DwaDisplayWire.encodeChunk(
-        offset: Int64(offset),
-        data: chunk,
-        isLast: end == video.count,
-        sequenceNumber: sequenceNumber))
-      sentRequestCount += 1
-      offset = end
-      sequenceNumber += 1
+    } catch {
+      if didStart {
+        sendBestEffortStop()
+      }
+      throw error
     }
   }
 
   func stop() {
-    _ = channel.send(
-      payload: DwaDisplayWire.encodeStop(),
-      messageID: UUID().uuidString)
+    sendBestEffortStop()
     cancelActiveTransfer()
   }
 
@@ -179,14 +193,11 @@ actor DisplayFeedTransport {
     }
   }
 
-  private func waitUntilInitiallyReady(
-    acknowledgedRequestCount: inout Int
-  ) async throws {
+  private func waitUntilInitiallyReady() async throws {
     while true {
       let ack = try await nextAck(
         timeout: handshakeTimeout,
         timeoutError: .handshakeTimedOut)
-      acknowledgedRequestCount += 1
 
       switch ack.status {
       case .ready:
@@ -199,6 +210,45 @@ actor DisplayFeedTransport {
         throw LiveDisplayFeedError.displayRejected("The Meta display returned an unknown MP4 acknowledgement.")
       }
     }
+  }
+
+  private func apply(
+    _ ack: DwaVideoStreamAck,
+    videoByteCount: Int,
+    acknowledgedByteCount: inout Int,
+    isBufferFull: inout Bool
+  ) throws {
+    switch ack.status {
+    case .ready:
+      isBufferFull = false
+    case .bufferFull:
+      isBufferFull = true
+    case .error:
+      throw LiveDisplayFeedError.displayRejected(ack.errorMessage)
+    case .unknown:
+      throw LiveDisplayFeedError.displayRejected("The Meta display returned an unknown MP4 acknowledgement.")
+    }
+
+    guard ack.bytesReceived <= Int64(videoByteCount) else {
+      throw LiveDisplayFeedError.displayRejected(
+        "The Meta display acknowledged more MP4 data than was sent.")
+    }
+    acknowledgedByteCount = max(acknowledgedByteCount, Int(ack.bytesReceived))
+  }
+
+  private func removeAcknowledgedChunks(
+    from outstandingChunkEnds: inout [Int],
+    acknowledgedByteCount: Int
+  ) {
+    while outstandingChunkEnds.first.map({ $0 <= acknowledgedByteCount }) == true {
+      outstandingChunkEnds.removeFirst()
+    }
+  }
+
+  private func sendBestEffortStop() {
+    _ = channel.send(
+      payload: DwaDisplayWire.encodeStop(),
+      messageID: UUID().uuidString)
   }
 
   private func nextAck(
